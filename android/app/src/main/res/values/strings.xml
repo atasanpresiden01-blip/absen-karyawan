@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AbsenKaryawan</string>
+    <string name="title_activity_main">AbsenKaryawan</string>
+    <string name="package_name">com.perusahaan.absenkaryawan</string>
+    <string name="custom_url_scheme">com.perusahaan.absenkaryawan</string>
+</resources>

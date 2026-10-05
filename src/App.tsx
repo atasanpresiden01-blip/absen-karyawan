@@ -10,6 +10,8 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { NotificationsScreen } from './screens/NotificationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SupervisorScreen } from './screens/SupervisorScreen';
+import { OfficeSettingsScreen } from './screens/OfficeSettingsScreen';
+import { DesktopLayout } from './components/DesktopLayout';
 import { BottomNav } from './components/BottomNav';
 import { LeaveRequestModal } from './components/LeaveRequestModal';
 
@@ -38,19 +40,31 @@ const MainNavigator: React.FC = () => {
         return <SettingsScreen />;
       case 'supervisor':
         return <SupervisorScreen />;
+      case 'office-settings':
+        return <OfficeSettingsScreen />;
       default:
         return <HomeScreen />;
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex justify-center">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 min-h-screen shadow-2xl relative flex flex-col">
-        {renderScreen()}
-        <BottomNav />
-        <LeaveRequestModal />
+  // Auth/Onboarding Screens stay focused and clean
+  if (currentScreen === 'splash' || currentScreen === 'login') {
+    return (
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex justify-center">
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 min-h-screen shadow-2xl relative flex flex-col">
+          {renderScreen()}
+        </div>
       </div>
-    </div>
+    );
+  }
+
+  // Enterprise Web & Mobile Dashboard
+  return (
+    <DesktopLayout>
+      {renderScreen()}
+      <BottomNav />
+      <LeaveRequestModal />
+    </DesktopLayout>
   );
 };
 

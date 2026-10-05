@@ -8,7 +8,8 @@ export type ScreenType =
   | 'profile'
   | 'notifications'
   | 'settings'
-  | 'supervisor';
+  | 'supervisor'
+  | 'office-settings';
 
 export type AttendanceStatus = 'present' | 'late' | 'sick' | 'leave' | 'absent';
 
@@ -69,3 +70,33 @@ export interface LeaveRequest {
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
 }
+
+export interface OfficeLocation {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+  wifiSsid?: string;
+  isHeadquarter: boolean;
+}
+
+export interface OfficeConfig {
+  officeName: string;
+  companyName: string;
+  locations: OfficeLocation[];
+  activeLocationId: string;
+  workHoursStart: string; // "08:00"
+  workHoursEnd: string;   // "17:00"
+  lateToleranceMinutes: number; // 15
+  requireSelfie: boolean;
+  requireGps: boolean;
+  strictGeofencing: boolean;
+  allowWfh: boolean;
+  antiFakeGps: boolean;
+  wifiWhitelistEnabled: boolean;
+  annualLeaveQuota: number; // 12
+  workDays: string[]; // ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
+}
+

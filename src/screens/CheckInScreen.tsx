@@ -16,7 +16,14 @@ import { useApp } from '../context/AppContext';
 import { HeaderBar } from '../components/HeaderBar';
 
 export const CheckInScreen: React.FC = () => {
-  const { navigateTo, performClockIn, performClockOut, todayRecord } = useApp();
+  const { 
+    navigateTo, 
+    performClockIn, 
+    performClockOut, 
+    todayRecord,
+    activeOfficeLocation,
+    officeConfig 
+  } = useApp();
   const [mode, setMode] = useState<'in' | 'out'>('in');
   const [scanning, setScanning] = useState(false);
   const [cameraActive, setCameraActive] = useState(true);
@@ -33,9 +40,9 @@ export const CheckInScreen: React.FC = () => {
       setScanning(false);
       let res;
       if (mode === 'in') {
-        res = performClockIn('Kantor Pusat - Cyber 2 Tower Lt. 12 (WFO)');
+        res = performClockIn(activeOfficeLocation.name);
       } else {
-        res = performClockOut('Kantor Pusat - Cyber 2 Tower Lt. 12 (WFO)');
+        res = performClockOut(activeOfficeLocation.name);
       }
 
       // Trigger celebration confetti
@@ -61,7 +68,7 @@ export const CheckInScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 w-full max-w-2xl mx-auto">
       <HeaderBar title="Check In / Clock Out" backTo="home" />
 
       <div className="p-5 space-y-4">
@@ -104,7 +111,7 @@ export const CheckInScreen: React.FC = () => {
             <div className="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center justify-center">
               <QrCode size={130} className="text-slate-900" />
               <span className="text-[10px] font-bold text-slate-500 mt-2 tracking-widest">
-                ABSEN-QR-OFFICE-01
+                ABSEN-QR-{activeOfficeLocation.id.toUpperCase()}
               </span>
             </div>
 
@@ -117,27 +124,27 @@ export const CheckInScreen: React.FC = () => {
 
           <div className="mt-4 text-center">
             <h4 className="font-bold text-base text-slate-900 dark:text-white">
-              {mode === 'in' ? 'Scan QR Masuk Kantor' : 'Scan QR Pulang Kantor'}
+              {mode === 'in' ? 'Scan Presensi Masuk Kantor' : 'Scan Presensi Pulang Kantor'}
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
-              Arahkan kamera ke QR Code yang terpajang di lobi atau meja resepsionis kantor
+              Arahkan kamera ke QR Code resmi di resepsionis kantor {activeOfficeLocation.name}
             </p>
           </div>
 
           {/* GPS Location Status Pill */}
           <div className="mt-4 w-full bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-3 border border-slate-200/60 dark:border-slate-700/80 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                <MapPin size={14} className="text-blue-600" />
-                <span>Cyber 2 Tower, Kuningan</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 truncate max-w-[220px]">
+                <MapPin size={14} className="text-blue-600 shrink-0" />
+                <span className="truncate">{activeOfficeLocation.name}</span>
               </span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 text-[11px]">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 text-[11px] shrink-0">
                 <ShieldCheck size={13} />
-                <span>Radius Aman (15m)</span>
+                <span>Radius {activeOfficeLocation.radiusMeters}m (Valid)</span>
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              Koordinat: -6.2259° S, 106.8302° E (Terverifikasi Akurat)
+              Koordinat Kantor: {activeOfficeLocation.latitude}°, {activeOfficeLocation.longitude}° (Terverifikasi)
             </p>
           </div>
         </div>

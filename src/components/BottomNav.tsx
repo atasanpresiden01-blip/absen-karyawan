@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import type { ScreenType } from '../types';
 
 export const BottomNav: React.FC = () => {
-  const { currentScreen, navigateTo } = useApp();
+  const { currentScreen, navigateTo, viewMode } = useApp();
 
   // Screens that should show bottom navigation
   const visibleScreens: ScreenType[] = ['home', 'checkin', 'history', 'schedule', 'profile', 'supervisor'];
@@ -21,7 +21,7 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 max-w-md mx-auto shadow-lg">
+    <div className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 max-w-md mx-auto shadow-lg ${viewMode === 'desktop' ? 'lg:hidden' : ''}`}>
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const Icon = item.icon;

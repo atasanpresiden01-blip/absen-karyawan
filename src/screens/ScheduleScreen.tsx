@@ -28,7 +28,7 @@ export const ScheduleScreen: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 w-full max-w-4xl mx-auto">
       <HeaderBar title="Jadwal & Shift Kerja" backTo="home" />
 
       <div className="p-5 space-y-4">

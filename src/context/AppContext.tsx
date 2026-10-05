@@ -5,7 +5,9 @@ import type {
   AttendanceRecord, 
   AppNotification, 
   ShiftSchedule, 
-  LeaveRequest 
+  LeaveRequest,
+  OfficeConfig,
+  OfficeLocation
 } from '../types';
 
 interface AppContextType {
@@ -31,6 +33,12 @@ interface AppContextType {
   setBiometricEnabled: (val: boolean) => void;
   leaveModalOpen: boolean;
   setLeaveModalOpen: (val: boolean) => void;
+  officeConfig: OfficeConfig;
+  updateOfficeConfig: (config: Partial<OfficeConfig>) => void;
+  activeOfficeLocation: OfficeLocation;
+  setActiveLocation: (id: string) => void;
+  viewMode: 'desktop' | 'mobile';
+  setViewMode: (mode: 'desktop' | 'mobile') => void;
 }
 
 const defaultEmployee: UserProfile = {
@@ -59,6 +67,65 @@ const defaultSupervisor: UserProfile = {
   leaveBalance: 12,
   avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
   isSupervisor: true,
+};
+
+const defaultOfficeConfig: OfficeConfig = {
+  officeName: 'Kantor Pusat Cyber 2 Tower',
+  companyName: 'PT Nusantara Digital Inovasi',
+  activeLocationId: 'loc-1',
+  locations: [
+    {
+      id: 'loc-1',
+      name: 'Kantor Pusat - Cyber 2 Tower Lt. 12',
+      address: 'Jl. H. R. Rasuna Said Blok X-5 No. 13, Kuningan Timur, Jakarta Selatan 12950',
+      latitude: -6.225574,
+      longitude: 106.831518,
+      radiusMeters: 100,
+      wifiSsid: 'Cyber2-Office-5G',
+      isHeadquarter: true,
+    },
+    {
+      id: 'loc-2',
+      name: 'Kantor Cabang Surabaya - Pakuwon Center',
+      address: 'Pakuwon Center Lt. 18, Jl. Embong Malang No. 1-5, Tegalsari, Surabaya 60261',
+      latitude: -7.262500,
+      longitude: 112.741000,
+      radiusMeters: 150,
+      wifiSsid: 'Pakuwon-Office-WiFi',
+      isHeadquarter: false,
+    },
+    {
+      id: 'loc-3',
+      name: 'Hub Teknologi Bandung - Dago',
+      address: 'Jl. Ir. H. Juanda No. 108, Dago, Coblong, Kota Bandung 40132',
+      latitude: -6.890000,
+      longitude: 107.610000,
+      radiusMeters: 120,
+      wifiSsid: 'Bandung-Tech-Hub',
+      isHeadquarter: false,
+    },
+    {
+      id: 'loc-4',
+      name: 'Remote / Work From Home (WFH)',
+      address: 'Lokasi Fleksibel Sesuai Domisili Karyawan (Global/Indonesia)',
+      latitude: 0,
+      longitude: 0,
+      radiusMeters: 50000,
+      wifiSsid: 'Any-Network',
+      isHeadquarter: false,
+    }
+  ],
+  workHoursStart: '08:00',
+  workHoursEnd: '17:00',
+  lateToleranceMinutes: 15,
+  requireSelfie: true,
+  requireGps: true,
+  strictGeofencing: true,
+  allowWfh: true,
+  antiFakeGps: true,
+  wifiWhitelistEnabled: false,
+  annualLeaveQuota: 12,
+  workDays: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
 };
 
 const initialHistory: AttendanceRecord[] = [
@@ -231,9 +298,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('splash');
   const [previousScreen, setPreviousScreen] = useState<ScreenType>('home');
   const [currentUser, setCurrentUser] = useState<UserProfile>(defaultEmployee);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      return saved === 'dark'; // Defaults to false (Light Mode)
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    } catch {
+      // ignore
+    }
+  }, [darkMode]);
+
   const [biometricEnabled, setBiometricEnabled] = useState<boolean>(true);
   const [leaveModalOpen, setLeaveModalOpen] = useState<boolean>(false);
+
+  const [officeConfig, setOfficeConfig] = useState<OfficeConfig>(() => {
+    try {
+      const saved = localStorage.getItem('office_config');
+      return saved ? JSON.parse(saved) : defaultOfficeConfig;
+    } catch {
+      return defaultOfficeConfig;
+    }
+  });
+
+  const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
+
+  const updateOfficeConfig = (config: Partial<OfficeConfig>) => {
+    setOfficeConfig(prev => {
+      const updated = { ...prev, ...config };
+      try {
+        localStorage.setItem('office_config', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const activeOfficeLocation = officeConfig.locations.find(
+    l => l.id === officeConfig.activeLocationId
+  ) || officeConfig.locations[0];
+
+  const setActiveLocation = (id: string) => {
+    updateOfficeConfig({ activeLocationId: id });
+  };
 
   // Today's attendance state
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
@@ -291,7 +411,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLeaveRequests(prev => prev.map(item => item.id === id ? { ...item, status } : item));
   };
 
-  const performClockIn = (location: string = 'Kantor Pusat - Cyber 2 Tower Lt. 12') => {
+  const performClockIn = (location?: string) => {
+    const loc = location || activeOfficeLocation.name;
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WIB`;
     const isLate = now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 0);
@@ -304,7 +425,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       clockIn: timeStr,
       status: isLate ? 'late' : 'present',
       statusLabel: isLate ? 'Terlambat Masuk' : 'Hadir Tepat Waktu',
-      location: location
+      location: loc
     };
 
     setTodayRecord(record);
@@ -315,7 +436,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       {
         id: `notif-clockin-${Date.now()}`,
         title: 'Clock-In Berhasil!',
-        description: `Absen masuk tercatat pada ${timeStr} di ${location}.`,
+        description: `Absen masuk tercatat pada ${timeStr} di ${loc}.`,
         timestamp: timeStr,
         read: false,
         type: 'attendance'
@@ -326,7 +447,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, message: 'Clock-In Berhasil!', time: timeStr };
   };
 
-  const performClockOut = (location: string = 'Kantor Pusat - Cyber 2 Tower Lt. 12') => {
+  const performClockOut = (location?: string) => {
+    const loc = location || activeOfficeLocation.name;
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} WIB`;
 
@@ -341,7 +463,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         clockOut: timeStr,
         status: 'present',
         statusLabel: 'Selesai Jam Kerja',
-        location: location
+        location: loc
       };
       setTodayRecord(record);
       setHistoryRecords(prev => [record, ...prev.filter(r => r.date !== '2026-10-05')]);
@@ -395,7 +517,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         biometricEnabled,
         setBiometricEnabled,
         leaveModalOpen,
-        setLeaveModalOpen
+        setLeaveModalOpen,
+        officeConfig,
+        updateOfficeConfig,
+        activeOfficeLocation,
+        setActiveLocation,
+        viewMode,
+        setViewMode
       }}
     >
       <div className={darkMode ? 'dark' : ''}>

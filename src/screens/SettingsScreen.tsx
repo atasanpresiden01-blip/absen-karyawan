@@ -10,7 +10,8 @@ import {
   LogOut, 
   ChevronRight,
   ShieldCheck,
-  Check
+  Check,
+  Building2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { HeaderBar } from '../components/HeaderBar';
@@ -42,6 +43,33 @@ export const SettingsScreen: React.FC = () => {
       <HeaderBar title="Pengaturan Aplikasi" backTo="home" />
 
       <div className="p-5 space-y-5">
+        {/* Office Settings Section */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">
+            Manajemen Kantor & Perusahaan
+          </h4>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs">
+            <button
+              onClick={() => navigateTo('office-settings')}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-2xl group-hover:scale-105 transition">
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white">Pengaturan Kantor & Geofencing</p>
+                    <span className="text-[9px] font-bold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded-md">Baru</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Radius GPS, titik kantor, jam shift & keamanan</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        </div>
+
         {/* Account Section */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">

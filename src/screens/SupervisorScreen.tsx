@@ -39,22 +39,36 @@ export const SupervisorScreen: React.FC = () => {
   });
 
   const handleExport = () => {
+    const headers = 'ID,Nama Karyawan,Jabatan,Departemen,Status,Jam Masuk\n';
+    const rows = teamMembers
+      .map(m => `"${m.id}","${m.name}","${m.role}","${m.dept}","${m.status}","${m.time}"`)
+      .join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `rekap-kehadiran-tim-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     setExportNotice(true);
-    setTimeout(() => setExportNotice(false), 2500);
+    setTimeout(() => setExportNotice(false), 3000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 max-w-md mx-auto">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 w-full max-w-5xl mx-auto">
       <HeaderBar 
         title="Dashboard Supervisor & HR" 
         backTo="home"
         rightAction={
           <button
             onClick={handleExport}
-            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded-full"
-            title="Export Rekap"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition active:scale-95"
+            title="Download Rekap CSV"
           >
-            <Download size={18} />
+            <Download size={14} />
+            <span className="hidden sm:inline">Export CSV</span>
           </button>
         }
       />
@@ -103,102 +117,105 @@ export const SupervisorScreen: React.FC = () => {
           </div>
         )}
 
-        {/* Section 1: Pending Leave Approvals */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Persetujuan Cuti / Izin ({leaveRequests.filter(r => r.status === 'pending').length})
-            </h4>
+        {/* Responsive Grid for Approvals & Team Tracker */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Section 1: Pending Leave Approvals */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Persetujuan Cuti / Izin ({leaveRequests.filter(r => r.status === 'pending').length})
+              </h4>
+            </div>
+
+            <div className="space-y-3">
+              {leaveRequests.filter(r => r.status === 'pending').length === 0 ? (
+                <p className="text-xs text-slate-400 italic text-center py-6">Tidak ada permohonan yang menunggu persetujuan</p>
+              ) : (
+                leaveRequests.filter(r => r.status === 'pending').map((req) => (
+                  <div
+                    key={req.id}
+                    className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700 space-y-2"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h5 className="font-bold text-xs text-slate-900 dark:text-white">{req.employeeName}</h5>
+                        <p className="text-[10px] text-slate-400">{req.nik} • {req.department}</p>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                        {req.type}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                      {req.startDate} s/d {req.endDate}
+                    </p>
+                    <p className="text-[11px] text-slate-500 italic">"{req.reason}"</p>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => updateLeaveStatus(req.id, 'rejected')}
+                        className="flex-1 py-1.5 px-3 bg-white dark:bg-slate-800 border border-rose-300 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-50 transition flex items-center justify-center gap-1"
+                      >
+                        <X size={14} />
+                        <span>Tolak</span>
+                      </button>
+                      <button
+                        onClick={() => updateLeaveStatus(req.id, 'approved')}
+                        className="flex-1 py-1.5 px-3 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-xs transition flex items-center justify-center gap-1"
+                      >
+                        <Check size={14} />
+                        <span>Setujui</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {leaveRequests.filter(r => r.status === 'pending').length === 0 ? (
-              <p className="text-xs text-slate-400 italic text-center py-2">Tidak ada permohonan yang menunggu persetujuan</p>
-            ) : (
-              leaveRequests.filter(r => r.status === 'pending').map((req) => (
-                <div
-                  key={req.id}
-                  className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700 space-y-2"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h5 className="font-bold text-xs text-slate-900 dark:text-white">{req.employeeName}</h5>
-                      <p className="text-[10px] text-slate-400">{req.nik} • {req.department}</p>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      {req.type}
+          {/* Section 2: Real-time Team Attendance Tracker */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Presensi Anggota Tim
+              </h4>
+              <span className="text-[11px] text-blue-600 font-semibold">Real-time</span>
+            </div>
+
+            {/* Search bar */}
+            <div className="relative mb-3">
+              <Search size={15} className="absolute left-3 top-3 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari nama karyawan..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[350px] overflow-y-auto">
+              {filteredMembers.map((member) => (
+                <div key={member.id} className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <h5 className="font-bold text-xs text-slate-900 dark:text-white">{member.name}</h5>
+                    <p className="text-[10px] text-slate-400">{member.role}</p>
+                  </div>
+
+                  <div className="text-right">
+                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      member.type === 'present'
+                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : member.type === 'late'
+                        ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                        : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+                    }`}>
+                      {member.status} {member.time !== '-' ? `(${member.time})` : ''}
                     </span>
                   </div>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                    {req.startDate} s/d {req.endDate}
-                  </p>
-                  <p className="text-[11px] text-slate-500 italic">"{req.reason}"</p>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <button
-                      onClick={() => updateLeaveStatus(req.id, 'rejected')}
-                      className="flex-1 py-1.5 px-3 bg-white dark:bg-slate-800 border border-rose-300 text-rose-600 rounded-xl text-xs font-bold hover:bg-rose-50 transition flex items-center justify-center gap-1"
-                    >
-                      <X size={14} />
-                      <span>Tolak</span>
-                    </button>
-                    <button
-                      onClick={() => updateLeaveStatus(req.id, 'approved')}
-                      className="flex-1 py-1.5 px-3 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-xs transition flex items-center justify-center gap-1"
-                    >
-                      <Check size={14} />
-                      <span>Setujui</span>
-                    </button>
-                  </div>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Section 2: Real-time Team Attendance Tracker */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Presensi Anggota Tim
-            </h4>
-            <span className="text-[11px] text-blue-600 font-semibold">Real-time</span>
-          </div>
-
-          {/* Search bar */}
-          <div className="relative mb-3">
-            <Search size={15} className="absolute left-3 top-3 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari nama karyawan..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
-            />
-          </div>
-
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {filteredMembers.map((member) => (
-              <div key={member.id} className="py-2.5 flex items-center justify-between">
-                <div>
-                  <h5 className="font-bold text-xs text-slate-900 dark:text-white">{member.name}</h5>
-                  <p className="text-[10px] text-slate-400">{member.role}</p>
-                </div>
-
-                <div className="text-right">
-                  <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    member.type === 'present'
-                      ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-                      : member.type === 'late'
-                      ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
-                      : 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
-                  }`}>
-                    {member.status} {member.time !== '-' ? `(${member.time})` : ''}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -75,8 +75,8 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors">
-      {/* Top Enterprise Web Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3 transition-colors">
+      {/* Top Enterprise Web Navigation Bar (Desktop Only) */}
+      <header className="hidden lg:block sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
@@ -304,8 +304,8 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({ children }) => {
         {/* Main Content Area */}
         <main className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950">
           {viewMode === 'desktop' ? (
-            /* Wide Desktop Content View */
-            <div className="w-full p-4 sm:p-6 lg:p-8">
+            /* Wide Desktop Content View (Zero extra padding on mobile) */
+            <div className="w-full p-0 lg:p-6">
               {children}
             </div>
           ) : (

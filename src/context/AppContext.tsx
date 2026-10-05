@@ -39,6 +39,10 @@ interface AppContextType {
   setActiveLocation: (id: string) => void;
   viewMode: 'desktop' | 'mobile';
   setViewMode: (mode: 'desktop' | 'mobile') => void;
+  employees: UserProfile[];
+  addEmployee: (emp: Omit<UserProfile, 'id'>) => void;
+  updateEmployee: (id: string, emp: Partial<UserProfile>) => void;
+  deleteEmployee: (id: string) => void;
 }
 
 const defaultEmployee: UserProfile = {
@@ -68,6 +72,76 @@ const defaultSupervisor: UserProfile = {
   avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
   isSupervisor: true,
 };
+
+const initialEmployees: UserProfile[] = [
+  defaultEmployee,
+  defaultSupervisor,
+  {
+    id: 'usr-3',
+    nik: 'EMP-20230114',
+    name: 'Budi Santoso',
+    role: 'Frontend Engineer',
+    department: 'Technology & Product',
+    email: 'budi.santoso@company.com',
+    phone: '0813-2233-4455',
+    joinDate: '15 Feb 2023',
+    leaveBalance: 10,
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+    isSupervisor: false,
+  },
+  {
+    id: 'usr-4',
+    nik: 'EMP-20230520',
+    name: 'Doni Siregar',
+    role: 'QA Automation Engineer',
+    department: 'Technology & Product',
+    email: 'doni.siregar@company.com',
+    phone: '0817-8899-1122',
+    joinDate: '01 Jun 2023',
+    leaveBalance: 8,
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
+    isSupervisor: false,
+  },
+  {
+    id: 'usr-5',
+    nik: 'EMP-20240219',
+    name: 'Rina Wijaya',
+    role: 'Product Marketing Lead',
+    department: 'Marketing & Growth',
+    email: 'rina.wijaya@company.com',
+    phone: '0815-4433-2211',
+    joinDate: '10 Feb 2024',
+    leaveBalance: 11,
+    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+    isSupervisor: false,
+  },
+  {
+    id: 'usr-6',
+    nik: 'EMP-20220811',
+    name: 'Maya Anggraini',
+    role: 'UI/UX Product Designer',
+    department: 'Technology & Product',
+    email: 'maya.anggraini@company.com',
+    phone: '0812-9988-7766',
+    joinDate: '05 Agu 2022',
+    leaveBalance: 7,
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+    isSupervisor: false,
+  },
+  {
+    id: 'usr-7',
+    nik: 'EMP-20211105',
+    name: 'Fajar Nugraha',
+    role: 'DevOps & Cloud Specialist',
+    department: 'Technology & Product',
+    email: 'fajar.nugraha@company.com',
+    phone: '0818-1234-5678',
+    joinDate: '12 Nov 2021',
+    leaveBalance: 9,
+    avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=250&q=80',
+    isSupervisor: false,
+  }
+];
 
 const defaultOfficeConfig: OfficeConfig = {
   officeName: 'Kantor Pusat Cyber 2 Tower',
@@ -355,6 +429,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     updateOfficeConfig({ activeLocationId: id });
   };
 
+  const [employees, setEmployees] = useState<UserProfile[]>(() => {
+    try {
+      const saved = localStorage.getItem('company_employees');
+      return saved ? JSON.parse(saved) : initialEmployees;
+    } catch {
+      return initialEmployees;
+    }
+  });
+
+  const saveEmployees = (list: UserProfile[]) => {
+    setEmployees(list);
+    try {
+      localStorage.setItem('company_employees', JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+  };
+
+  const addEmployee = (emp: Omit<UserProfile, 'id'>) => {
+    const newEmp: UserProfile = {
+      ...emp,
+      id: `usr-${Date.now()}`
+    };
+    saveEmployees([newEmp, ...employees]);
+  };
+
+  const updateEmployee = (id: string, updated: Partial<UserProfile>) => {
+    saveEmployees(employees.map(e => e.id === id ? { ...e, ...updated } : e));
+  };
+
+  const deleteEmployee = (id: string) => {
+    saveEmployees(employees.filter(e => e.id !== id));
+  };
+
   // Today's attendance state
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
   const [historyRecords, setHistoryRecords] = useState<AttendanceRecord[]>(initialHistory);
@@ -523,7 +631,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeOfficeLocation,
         setActiveLocation,
         viewMode,
-        setViewMode
+        setViewMode,
+        employees,
+        addEmployee,
+        updateEmployee,
+        deleteEmployee
       }}
     >
       <div className={darkMode ? 'dark' : ''}>

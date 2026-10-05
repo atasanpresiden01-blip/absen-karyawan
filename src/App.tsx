@@ -11,6 +11,7 @@ import { NotificationsScreen } from './screens/NotificationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SupervisorScreen } from './screens/SupervisorScreen';
 import { OfficeSettingsScreen } from './screens/OfficeSettingsScreen';
+import { EmployeeManagementScreen } from './screens/EmployeeManagementScreen';
 import { DesktopLayout } from './components/DesktopLayout';
 import { BottomNav } from './components/BottomNav';
 import { LeaveRequestModal } from './components/LeaveRequestModal';
@@ -42,6 +43,8 @@ const MainNavigator: React.FC = () => {
         return <SupervisorScreen />;
       case 'office-settings':
         return <OfficeSettingsScreen />;
+      case 'employees':
+        return <EmployeeManagementScreen />;
       default:
         return <HomeScreen />;
     }

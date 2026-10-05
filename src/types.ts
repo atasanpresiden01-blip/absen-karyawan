@@ -9,7 +9,8 @@ export type ScreenType =
   | 'notifications'
   | 'settings'
   | 'supervisor'
-  | 'office-settings';
+  | 'office-settings'
+  | 'employees';
 
 export type AttendanceStatus = 'present' | 'late' | 'sick' | 'leave' | 'absent';
 

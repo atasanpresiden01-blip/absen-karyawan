@@ -18,7 +18,7 @@ import { useApp } from '../context/AppContext';
 import { HeaderBar } from '../components/HeaderBar';
 
 export const SupervisorScreen: React.FC = () => {
-  const { leaveRequests, updateLeaveStatus } = useApp();
+  const { leaveRequests, updateLeaveStatus, navigateTo } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('Semua');
   const [exportNotice, setExportNotice] = useState(false);
@@ -108,6 +108,26 @@ export const SupervisorScreen: React.FC = () => {
               <p className="text-lg font-extrabold mt-0.5 text-amber-300">3 Orang</p>
             </div>
           </div>
+        </div>
+
+        {/* Shortcut to Employee Master Database */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <Users size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">Database Master Karyawan</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Tambah data baru, edit NIK, jabatan, dan jatah cuti</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigateTo('employees')}
+            className="self-end sm:self-auto px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 shadow-xs"
+          >
+            <span>Kelola Karyawan</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
 
         {exportNotice && (
